@@ -4,7 +4,8 @@ import xlsxwriter
 from datetime import date
 # from report_data import *
 from file_report_generation import draw_report_title, draw_report_signs
-from file_classes_report_generation import draw_class_report_title, draw_class_report_child_days
+from file_classes_report_generation import draw_class_report_title, \
+    draw_class_report_child_days, draw_class_report_signs
 from report_data import CLASS_WAS_NOT, LIST_REPORT_NAME
 import cell_formats
 
@@ -31,8 +32,8 @@ def set_worksheet_main(self):
     self.set_row(1, 43.5)
     self.set_row(2, 43.5)
     self.set_row(3, 43.5)
-    for q in range(4, 50):
-        self.set_row(q, 41)
+    for s_row in range(4, 50):
+        self.set_row(s_row, 41)
 
 
 def set_worksheet_classes(self, pupil, days):
@@ -102,17 +103,17 @@ def cell_value_check(value: str, values: tuple) -> any:
 
 
 def pupil_missed_days(value: str, values: tuple) -> int:
-    """Check the value in the cell"""
+    """if pupil missed day, then add 1"""
     res = 0
-    if value == values[0]:
+    if value == values[1]:
         res = 1
     return res
 
 
 def pupil_child_days(value: str, values: tuple) -> int:
-    """Check the value in the cell"""
+    """if pupil was this day, then add 1"""
     res = 0
-    if value == values[1]:
+    if value == values[0]:
         res = 1
     return res
 
@@ -126,47 +127,30 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print("File could not be found.")
 
-    # receive sheet names and quantity
+    # Receive sheet names and quantity
     feeding_sheet_names = tuple(xls.sheet_names)
     feeding_sheet_numbers = len(feeding_sheet_names)
     print('Sheets:', feeding_sheet_names, feeding_sheet_numbers)
 
-    # receive data from all sheets in xlsx
-    # sheet_xls_name = ' '
-    # receive data from "Service" sheet in xlsx
+    # Receive data from "Service" sheet in xlsx
     sheet_xls_name = "Service"
-    # receive variants what cell contains
+
+    # Receive variants what cell contains
     service = xls.parse(sheet_xls_name, header=None)
     cells_const_values = tuple(service.values[1:, 0])
     print('cells_const_values:', cells_const_values)
-    # receive data from "Загальні налаштування" sheet in xlsx
+
+    # Receive data from "Загальні налаштування" sheet in xlsx
     sheet_xls_name = "Загальні налаштування"
-    # receive general settings
+
+    # Receive general settings
     settings_from_xls = xls.parse(sheet_xls_name)
-    # print(settings_from_xls)
     year_report = int(settings_from_xls.values[0, 0])
-    # print("Year: ", year_report)
     month_report = settings_from_xls.values[0, 1]
-    # print("Month: ", month_report)
     price = float(settings_from_xls.values[0, 2])
-    # print("price: ", price)
     school = settings_from_xls.values[0, 3]
-    # print("school: ", school)
 
-    # quantity of classes 1, 2, 3, and 4 accordingly
-    # number_classes = settings_from_xls.values[1:5, 5]
-    # first_classes_list = settings_from_xls["Класи 1"]
-    # second_classes_list = settings_from_xls["Класи 2"]
-    # third_classes_list = settings_from_xls["Класи 3"]
-    # fourth_classes_list = settings_from_xls["Класи 4"]
-    # print("1-е:", first_classes_list)
-    # print("2-е:", second_classes_list)
-    # print("3-е:", third_classes_list)
-    # print("4-е:", fourth_classes_list)
-    # print(number_classes)
-
-    # receive database from class' sheets in xlsx
-
+    # Receive database from class' sheets in xlsx
     classes_list = []
     db_all_classes = {}
     for sheet_xls_name in feeding_sheet_names:
@@ -175,13 +159,13 @@ if __name__ == "__main__":
             class_data = xls.parse(sheet_xls_name)
             db_all_classes[sheet_xls_name] = class_data
 
-    # create a workbook
+    # Create a workbook for report generation
     today = date.today().strftime("(%d.%m.%Y)")
     file_report_name = 'Звіт_з_харчування_за_' + str(month_report) + '_' + str(year_report) + str(today)
     file_report_xlsx = file_report_name + ".xlsx"
     workbook = xlsxwriter.Workbook(file_report_xlsx)
 
-    # create the first worksheet
+    # Create the first worksheet
     worksheet = workbook.add_worksheet(LIST_REPORT_NAME)
     set_worksheet_main(worksheet)
 
@@ -193,6 +177,9 @@ if __name__ == "__main__":
         class_columns = tuple(db_all_classes[form].columns)
         # Define working days
         working_days = []
+        # Define summary of child days and missed days
+        child_days_form, missed_days_form = 0, 0
+
         for c in class_columns:
             if type(c) is int:
                 working_days.append(c)
@@ -258,18 +245,54 @@ if __name__ == "__main__":
         # write results for each working day in rows "Всього дітоднів" and "Сума"
         col = 0
         draw_class_report_child_days(workbook, worksheet2, dict(calc_df[form]), price, row_fin_pupils, col)
-
+        # For all rows with pupils calc missed and child days
         for r in db_all_classes[form].index:
+            sum_missed = 0
+            sum_child = 0
+            # Go for rows
             for q in range(3, len(class_columns)):
                 if type(q) is int:
-                    print(db_all_classes[form].iloc[r, q])
+                    """
+                    FOR FUTURE:
+                    MAKE MERGE OF EQUAL CELLS IN ROW FOR INDIVIDUAL EDUCATION, IN AND OUT
+                    """
+                    # Calc missed and child days for each pupil
+                    sum_missed += pupil_missed_days(db_all_classes[form].iloc[r, q], cells_const_values)
+                    sum_child += pupil_child_days(db_all_classes[form].iloc[r, q], cells_const_values)
+            # Write to class report missed and child days for each pupil, and money
+            worksheet2.write(5 + r, len(class_columns) - 1, sum_missed,
+                             cell_formats.pupils_number_format(workbook))
+            worksheet2.write(5 + r, len(class_columns), sum_child,
+                             cell_formats.pupils_number_format(workbook))
+            worksheet2.write(5 + r, len(class_columns) + 1, sum_child * price,
+                             cell_formats.pupils_child_price_format(workbook))
+            # Calc sum for missed and child days for class
+            missed_days_form += sum_missed
+            child_days_form += sum_child
 
-        # print(db_all_classes[form].index)
+        # Write to class report missed and child days for each pupil, and money + draw free cells
+        worksheet2.write(5 + pupil_quantity, len(class_columns) - 1, missed_days_form,
+                         cell_formats.pupils_number_format(workbook))
+        worksheet2.write(5 + pupil_quantity + 1, len(class_columns) - 1, '',
+                         cell_formats.pupils_number_format(workbook))
+
+        worksheet2.write(5 + pupil_quantity, len(class_columns), child_days_form,
+                         cell_formats.pupils_number_format(workbook))
+        worksheet2.write(5 + pupil_quantity + 1, len(class_columns), '',
+                         cell_formats.pupils_number_format(workbook))
+
+        worksheet2.write(5 + pupil_quantity, len(class_columns) + 1, '',
+                         cell_formats.pupils_child_price_format(workbook))
+        worksheet2.write(5 + pupil_quantity + 1, len(class_columns) + 1, child_days_form * price,
+                         cell_formats.pupils_child_price_format(workbook))
+
+        # Draw signs in the bottom of sheets for each class
+        draw_class_report_signs(workbook, worksheet2, teachers[form], 5 + pupil_quantity + 2)
 
     """"
     Продолжить тут формирование отчетов по классам
     + Заполнить строки с учениками
-    - просчитать все суммы и внести в отчеты
+    + просчитать все суммы и внести в отчеты по классам
     - добавить подписи
     """
 
@@ -288,32 +311,3 @@ if __name__ == "__main__":
     draw_report_signs(workbook, worksheet, temp_row)
 
     workbook.close()
-
-
-def setting_window():
-    pass
-
-
-def open_files():
-    pass
-
-
-# for person applies variants н / 0 / б / инд
-def absent_visits():
-    pass
-
-
-def calc_money():
-    pass
-
-
-def make_class_report():
-    pass
-
-
-def make_number_report():
-    pass
-
-
-def make_money_report():
-    pass

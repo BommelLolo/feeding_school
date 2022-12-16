@@ -1,29 +1,24 @@
-import copy
-from report_data import *
-
-from cell_formats import title_format, date_format, default_format, \
-                        text_box_wrap_format, text_box_center_wrap_format, \
-                        text_box_center_wrap_num_format, text_box_center_blue_format, \
-                        text_box_center_bold_format, text_box_center_bold_num_format
+from report_data import NAME_TABLE_COL, REPORT1_SIGNS_DICT
+from cell_formats import *
 
 
 # write down sums for every class to the cell
-def write_classes_sums(self, in_row, in_col, sheet, book):
-    for idx, (form, numbers) in enumerate(self.items()):
-        sheet.write(in_row, in_col, form, text_box_center_wrap_format(book))
-        tmp_col = in_col + 1
-        n = 0
-        for number in numbers:
-            if n < 2:
-                sheet.write(in_row, tmp_col, number, text_box_center_blue_format(book))
-            elif n == 3:
-                sheet.write(in_row, tmp_col, number, text_box_center_wrap_num_format(book))
-            else:
-                sheet.write(in_row, tmp_col, number, text_box_center_wrap_format(book))
-            tmp_col += 1
-            n += 1
-        in_row += 1
-    return in_row, in_col
+# def write_classes_sums(self, in_row, in_col, sheet, book):
+#     for idx, (form, numbers) in enumerate(self.items()):
+#         sheet.write(in_row, in_col, form, text_box_center_wrap_format(book))
+#         tmp_col = in_col + 1
+#         n = 0
+#         for number in numbers:
+#             if n < 2:
+#                 sheet.write(in_row, tmp_col, number, text_box_center_blue_format(book))
+#             elif n == 3:
+#                 sheet.write(in_row, tmp_col, number, text_box_center_wrap_num_format(book))
+#             else:
+#                 sheet.write(in_row, tmp_col, number, text_box_center_wrap_format(book))
+#             tmp_col += 1
+#             n += 1
+#         in_row += 1
+#     return in_row, in_col
 
 
 # write sums for same classes
@@ -52,8 +47,6 @@ def write_classes_sums(self, in_row, in_col, sheet, book):
 #     sum_classes = [row_name, pupils_sum, pupils_eat, pupils_days, pupils_days * PRICE]
 #     # print(sum_classes)
 #     return sum_classes
-
-
 
 
 def draw_report_title(book, sheet, data, row=0, col=0):

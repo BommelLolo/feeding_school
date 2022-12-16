@@ -35,7 +35,7 @@ def default_format(self):
     default = self.add_format({
         'font_name': REGULAR_FONT,
         'font_size': REGULAR_SIZE,
-        'valign': 'top',
+        'valign': 'vcenter',
     })
     return default
 
@@ -146,6 +146,7 @@ def pupils_number_format(self):
         'align': 'center',
         'valign': 'vcenter',
         'border': True,
+        'bold': True
     })
     return pupils_number
 
@@ -233,3 +234,25 @@ def classes_results_sum_format(self):
     })
     return classes_results_sum
 
+
+def pupils_child_price_format(self):
+    pupils_child_price = self.add_format({
+        'font_name': REGULAR_FONT2,
+        'font_size': REGULAR_SIZE2,
+        'align': 'center',
+        'valign': 'vcenter',
+        'border': True,
+        'bold': True,
+        'num_format': '0.0'
+    })
+    return pupils_child_price
+
+
+def classes_signs_format(self):
+    classes_signs = self.add_format({
+        'font_name': REGULAR_FONT,
+        'font_size': REGULAR_SIZE2,
+        'align': 'left',
+        'valign': 'vcenter',
+    })
+    return classes_signs

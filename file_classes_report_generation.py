@@ -1,4 +1,4 @@
-from report_data import CLASS_NAME_TABLE_COL
+from report_data import CLASS_NAME_TABLE_COL, CLASS_REPORT_SIGNS_DICT, CLASS_TEACHER
 from cell_formats import *
 
 
@@ -16,12 +16,8 @@ def draw_class_report_title(book, sheet, data, days, row=0, col=0):
     sheet.merge_range(row, col, row+1, col, CLASS_NAME_TABLE_COL[0], text_box_center_wrap_format2(book))
     sheet.merge_range(row, col+1, row+1, col+1, CLASS_NAME_TABLE_COL[1], text_box_center_wrap_format2(book))
 
-    # write days
-    # if number of days less than 24, than we need to apply format to remaining cells
-    # for col in range(23, len(days) - 1, -1):
-    #     sheet.merge_range(row, col + 2, row + 1, col + 2, None, text_box_center_wrap_format2(book))
+    # Write days. Divide them on 2 rows by weeks
     col = 0
-    # divide days on 2 rows by weeks
     j = days[1]
     k = 1
     numbers_format = ['', text_box_center_nums_top_format, text_box_center_nums_bot_format]
@@ -58,3 +54,29 @@ def draw_class_report_child_days(book, sheet, data, day_price, row=0, col=0):
 
         sheet.write(row+1, col, data[day] * day_price, classes_results_sum_format(book))
         col += 1
+
+
+def draw_class_report_signs(book, sheet, data, row, col=2):
+    """Creating the footer of the template."""
+    row += 1
+    # make signs list
+    for k, v in CLASS_REPORT_SIGNS_DICT.items():
+        sheet.merge_range(row, col, row, col+10, k, classes_signs_format(book))
+        sheet.write(row, col+15, v, classes_signs_format(book))
+        row += 1
+    # make sign of class teacher
+    sheet.merge_range(row, col, row, col + 10, CLASS_TEACHER, classes_signs_format(book))
+    sheet.write(row, col + 5, data, classes_signs_format(book))
+
+
+    # # write 1 row "Звіт"
+    # sheet.merge_range(row, col, row, col+4+len(days), data[0], title_format2(book))
+    # row += 1
+    #
+    # # write 2 row
+    # sheet.merge_range(row, col, row, col+4+len(days), data[1], title_format2(book))
+    # row += 2
+    #
+    # # make table
+    # sheet.merge_range(row, col, row+1, col, CLASS_NAME_TABLE_COL[0], text_box_center_wrap_format2(book))
+    # sheet.merge_range(row, col+1, row+1, col+1, CLASS_NAME_TABLE_COL[1], text_box_center_wrap_format2(book))
