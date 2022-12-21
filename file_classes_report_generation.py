@@ -61,12 +61,12 @@ def draw_class_report_signs(book, sheet, data, row, col=2):
     row += 1
     # make signs list
     for k, v in CLASS_REPORT_SIGNS_DICT.items():
-        sheet.merge_range(row, col, row, col+10, k, classes_signs_format(book))
-        sheet.write(row, col+15, v, classes_signs_format(book))
+        sheet.merge_range(row, col, row, col+7, k, classes_signs_format(book))
+        sheet.write(row, col+12, v, classes_signs_format(book))
         row += 1
     # make sign of class teacher
-    sheet.merge_range(row, col, row, col + 10, CLASS_TEACHER, classes_signs_format(book))
-    sheet.write(row, col + 5, data, classes_signs_format(book))
+    sheet.merge_range(row, col, row, col + 7, CLASS_TEACHER, classes_signs_format(book))
+    sheet.write(row, col + 12, data, classes_signs_format(book))
 
 
     # # write 1 row "Звіт"

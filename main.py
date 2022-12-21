@@ -57,7 +57,7 @@ def set_worksheet_classes(self, pupil, days):
         shift = len(days) - (ord("Z") - ord("C"))
         end_letter = chr(ord("A") + shift - 1)
         address = "C:" + "A" + end_letter
-    self.set_column_pixels(address, 26)
+    self.set_column_pixels(address, 34)
     # width last cells after working days
     for set_width in range(3):
         if address[0] == "Z" or len(address) == 4:

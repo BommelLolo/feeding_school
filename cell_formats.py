@@ -72,7 +72,7 @@ def text_box_center_wrap_num_format(self):
         'valign': 'vcenter',
         'border': True,
         'text_wrap': True,
-        'num_format': '0.0'
+        'num_format': '0.00'
     })
     return text_box_center_wrap
 
@@ -112,7 +112,7 @@ def text_box_center_bold_num_format(self):
         'border': True,
         'text_wrap': True,
         'bold': True,
-        'num_format': '0.0'
+        'num_format': '0.00'
     })
     return text_box_center_bold
 
@@ -192,7 +192,7 @@ def text_pupil_cells_center_format(self):
         'align': 'center',
         'valign': 'vcenter',
         'border': True,
-        'num_format': '0.0'
+        'num_format': '0.00'
     })
     return text_pupil_cells_center
 
@@ -230,7 +230,7 @@ def classes_results_sum_format(self):
         'border': True,
         'bold': False,
         'rotation': 90,
-        'num_format': '0.0'
+        'num_format': '0.00'
     })
     return classes_results_sum
 
@@ -243,7 +243,7 @@ def pupils_child_price_format(self):
         'valign': 'vcenter',
         'border': True,
         'bold': True,
-        'num_format': '0.0'
+        'num_format': '0.00'
     })
     return pupils_child_price
 
