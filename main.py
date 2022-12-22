@@ -2,120 +2,15 @@ import pandas as pd
 import warnings
 import xlsxwriter
 from datetime import date
-# from report_data import *
-from file_report_generation import draw_report_title, draw_report_signs
+from report_data import FORMS_TITLE
+from file_report_generation import draw_report_title, draw_report_table_forms, \
+    draw_report_table_sums, calc_report_table_forms_sums, \
+    draw_report_signs, set_worksheet_main
 from file_classes_report_generation import draw_class_report_title, \
-    draw_class_report_child_days, draw_class_report_signs
-from report_data import CLASS_WAS_NOT, LIST_REPORT_NAME
+    draw_class_report_child_days, draw_class_report_signs, set_worksheet_classes, \
+    cell_value_check, pupil_missed_days, pupil_child_days
 import cell_formats
-
-
-def set_worksheet_main(self):
-    """"Settings for general report"""
-    # page orientation as landscape
-    self.set_landscape()
-    # fit to printed area
-    self.fit_to_pages(1, 1)
-    # paper type A4
-    self.set_paper(9)
-    # center the printed page horizontally
-    self.center_horizontally()
-    # margins    set_margins([left=0.7,] right=0.7,] top=0.75,] bottom=0.75]]])
-    self.set_margins(0.7, 0.7, 0.73, 0.92)
-    # width of cells
-    self.set_column("A:A", 25)
-    self.set_column("B:B", 35)
-    self.set_column("C:E", 37)
-    self.set_column("F:F", 90)
-    # height of cells
-    self.set_row(0, 43.5)
-    self.set_row(1, 43.5)
-    self.set_row(2, 43.5)
-    self.set_row(3, 43.5)
-    for s_row in range(4, 50):
-        self.set_row(s_row, 41)
-
-
-def set_worksheet_classes(self, pupil, days):
-    """Settings for class report"""
-    # fit to printed area
-    self.fit_to_pages(1, 1)
-    # paper type A4
-    self.set_paper(9)
-    # center the printed page horizontally
-    self.center_horizontally()
-    # margins    set_margins([left=0.7,] right=0.7,] top=0.75,] bottom=0.75]]])
-    self.set_margins(0.7, 0.7, 0.73, 0.92)
-    # width of cells
-    self.set_column_pixels("A:A", 28)
-    self.set_column_pixels("B:B", 160)
-    # width for working days
-    if len(days) <= (ord("Z") - ord("C")):
-        end_letter = chr(ord("C") + len(days) - 1)
-        address = "C:" + end_letter
-    else:
-        shift = len(days) - (ord("Z") - ord("C"))
-        end_letter = chr(ord("A") + shift - 1)
-        address = "C:" + "A" + end_letter
-    self.set_column_pixels(address, 34)
-    # width last cells after working days
-    for set_width in range(3):
-        if address[0] == "Z" or len(address) == 4:
-            address = "AA:AA"
-        elif len(address) == 5:
-            end_letter = chr(ord(address[4]) + 1)
-            address = "A" + end_letter + ":A" + end_letter
-        else:
-            end_letter = chr(ord(end_letter) + 1)
-            address = end_letter + ":" + end_letter
-        self.set_column_pixels(address, 87)
-        set_width += 1
-
-    # height of cells
-
-    self.set_row_pixels(0, 40)
-    self.set_row_pixels(1, 40)
-    self.set_row_pixels(2, 20)
-    self.set_row_pixels(3, 30)
-    self.set_row_pixels(4, 30)
-    # Set row height depending on number of pupils
-    set_row = 5
-    for set_pupil in range(set_row, pupil+set_row+1):
-        self.set_row_pixels(set_pupil, 36)
-    set_row += pupil
-    self.set_row_pixels(set_row, 40)
-    self.set_row_pixels(set_row+1, 54)
-    self.set_row_pixels(set_row+2, 20)
-    self.set_row_pixels(set_row+3, 40)
-    self.set_row_pixels(set_row+4, 40)
-    self.set_row_pixels(set_row+5, 40)
-    self.set_row_pixels(set_row+6, 40)
-    return set_row
-
-
-def cell_value_check(value: str, values: tuple) -> any:
-    """Check the value in the cell"""
-    if value == values[0]:
-        value = price
-    elif value == values[2]:
-        value = CLASS_WAS_NOT
-    return value
-
-
-def pupil_missed_days(value: str, values: tuple) -> int:
-    """if pupil missed day, then add 1"""
-    res = 0
-    if value == values[1]:
-        res = 1
-    return res
-
-
-def pupil_child_days(value: str, values: tuple) -> int:
-    """if pupil was this day, then add 1"""
-    res = 0
-    if value == values[0]:
-        res = 1
-    return res
+from report_data import LIST_REPORT_NAME
 
 
 if __name__ == "__main__":
@@ -150,7 +45,7 @@ if __name__ == "__main__":
     price = float(settings_from_xls.values[0, 2])
     school = settings_from_xls.values[0, 3]
 
-    # Receive database from class' sheets in xlsx
+    # Receive database from classes' sheets in xlsx
     classes_list = []
     db_all_classes = {}
     for sheet_xls_name in feeding_sheet_names:
@@ -170,9 +65,10 @@ if __name__ == "__main__":
     set_worksheet_main(worksheet)
 
     teachers = {}  # dict for class teachers
+    form_report_data = {}
 
-    # Create other worksheets and add information from input file
-    for form in classes_list:
+    # Create other worksheets and add information from input file. Sort sheets of classes
+    for form in sorted(classes_list):
         # Get column names
         class_columns = tuple(db_all_classes[form].columns)
         # Define working days
@@ -204,6 +100,7 @@ if __name__ == "__main__":
         temp_row += 2
         working_days = []
         child_days_dict = {}
+        report_data = []
 
         for c in class_columns:
             # write dict of column names for each class
@@ -226,7 +123,7 @@ if __name__ == "__main__":
             else:
                 for i in list(pupils_col[c]):
                     # go around fault of Nan value writing. Change Nan to ''
-                    i = cell_value_check(i, cells_const_values)
+                    i = cell_value_check(i, cells_const_values, price)
                     try:
                         worksheet2.write(cur_row, temp_col, i,
                                          cell_formats.text_pupil_cells_center_format(workbook))
@@ -242,6 +139,7 @@ if __name__ == "__main__":
                     # make dataframe with child days for all classes
                     calc_df = pd.DataFrame({form: child_days_dict})
             temp_col += 1
+
         # write results for each working day in rows "Всього дітоднів" and "Сума"
         col = 0
         draw_class_report_child_days(workbook, worksheet2, dict(calc_df[form]), price, row_fin_pupils, col)
@@ -289,18 +187,15 @@ if __name__ == "__main__":
         # Draw signs in the bottom of sheets for each class
         draw_class_report_signs(workbook, worksheet2, teachers[form], 5 + pupil_quantity + 2)
 
-    """"
-    Продолжить тут формирование отчетов по классам
-    + Заполнить строки с учениками
-    + просчитать все суммы и внести в отчеты по классам
-    - добавить подписи
-    """
+        """Розрахувати кількість дітей, які харчуються"""
+        """Підготувати примітки про індивідуальне навчання, вибування, прибування"""
+        note = ''
+        # Prepare data for report table
+        pupil_eat = pupil_quantity
+        report_data = [pupil_quantity, pupil_eat, child_days_form, child_days_form * price, note]
+        form_report_data.setdefault(form, report_data)
 
-        # calc missed days, child days, sum for every pupil
-
-    # for sheet_name in classes_list:
-
-    # fill the first worksheet
+    # Fill the title for first report  worksheet
     zvit = ["Звіт",
             f"з харчування учнів 1-4 класів {school}",
             f"за    {month_report}      {year_report}     року"]
@@ -308,6 +203,40 @@ if __name__ == "__main__":
     temp_row = 0
     temp_row = draw_report_title(workbook, worksheet, zvit, row=temp_row)
 
+    # Fill the table for first report
+    # Calc sums for classes
+    all_forms_sum_report = calc_report_table_forms_sums(form_report_data)
+    # print(all_forms_sum_report)
+    # print(form_report_data)
+    # Write 1-st classes
+    for form in form_report_data:
+        if '1' in form:
+            temp_row = draw_report_table_forms(workbook, worksheet, form_report_data[form], form, temp_row)
+    # Write sums for 1-st classes
+    temp_row = draw_report_table_sums(workbook, worksheet, all_forms_sum_report, FORMS_TITLE[0], temp_row)
+
+    # Write 2-nd classes
+    for form in form_report_data:
+        if '2' in form:
+            temp_row = draw_report_table_forms(workbook, worksheet, form_report_data[form], form, temp_row)
+    # Write sums for 2-nd classes
+    temp_row = draw_report_table_sums(workbook, worksheet, all_forms_sum_report, FORMS_TITLE[1], temp_row)
+
+    # Write 3-rd classes
+    for form in form_report_data:
+        if '3' in form:
+            temp_row = draw_report_table_forms(workbook, worksheet, form_report_data[form], form, temp_row)
+    # Write sums for 3-rd classes
+    temp_row = draw_report_table_sums(workbook, worksheet, all_forms_sum_report, FORMS_TITLE[2], temp_row)
+
+    # Write 4-th classes
+    for form in form_report_data:
+        if '4' in form:
+            temp_row = draw_report_table_forms(workbook, worksheet, form_report_data[form], form, temp_row)
+    # Write sums for 4-th classes
+    temp_row = draw_report_table_sums(workbook, worksheet, all_forms_sum_report, FORMS_TITLE[3], temp_row)
+
+    # Fill the signs for first report  worksheet
     draw_report_signs(workbook, worksheet, temp_row)
 
     workbook.close()

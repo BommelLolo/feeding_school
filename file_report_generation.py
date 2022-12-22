@@ -1,52 +1,31 @@
-from report_data import NAME_TABLE_COL, REPORT1_SIGNS_DICT
+from report_data import NAME_TABLE_COL, REPORT1_SIGNS_DICT, FORMS_TITLE
 from cell_formats import *
 
 
-# write down sums for every class to the cell
-# def write_classes_sums(self, in_row, in_col, sheet, book):
-#     for idx, (form, numbers) in enumerate(self.items()):
-#         sheet.write(in_row, in_col, form, text_box_center_wrap_format(book))
-#         tmp_col = in_col + 1
-#         n = 0
-#         for number in numbers:
-#             if n < 2:
-#                 sheet.write(in_row, tmp_col, number, text_box_center_blue_format(book))
-#             elif n == 3:
-#                 sheet.write(in_row, tmp_col, number, text_box_center_wrap_num_format(book))
-#             else:
-#                 sheet.write(in_row, tmp_col, number, text_box_center_wrap_format(book))
-#             tmp_col += 1
-#             n += 1
-#         in_row += 1
-#     return in_row, in_col
-
-
-# write sums for same classes
-# def write_all_sums(self, in_row, in_col, sheet, book):
-#     n = 0
-#     for numbers in self:
-#         if n == 4:
-#             sheet.write(in_row, in_col, numbers, text_box_center_bold_num_format(book))
-#         else:
-#             sheet.write(in_row, in_col, numbers, text_box_center_bold_format(book))
-#         n += 1
-#         in_col += 1
-#     sheet.write(in_row, in_col, " ", text_box_center_bold_format(book))
-#     return in_row, in_col
-
-
-# def calc_sums(self, row_name: str):
-#     pupils_sum = 0
-#     pupils_eat = 0
-#     pupils_days = 0
-#     for form in self:
-#         pupils_sum += int(self[form][0])
-#         pupils_eat += int(self[form][1])
-#         pupils_days += int(self[form][2])
-#     # print(pupils_sum, pupils_eat, pupils_days)
-#     sum_classes = [row_name, pupils_sum, pupils_eat, pupils_days, pupils_days * PRICE]
-#     # print(sum_classes)
-#     return sum_classes
+def set_worksheet_main(self):
+    """"Settings for general report"""
+    # page orientation as landscape
+    self.set_landscape()
+    # fit to printed area
+    self.fit_to_pages(1, 1)
+    # paper type A4
+    self.set_paper(9)
+    # center the printed page horizontally
+    self.center_horizontally()
+    # margins    set_margins([left=0.7,] right=0.7,] top=0.75,] bottom=0.75]]])
+    self.set_margins(0.7, 0.7, 0.73, 0.92)
+    # width of cells
+    self.set_column("A:A", 25)
+    self.set_column("B:B", 35)
+    self.set_column("C:E", 37)
+    self.set_column("F:F", 90)
+    # height of cells
+    self.set_row(0, 43.5)
+    self.set_row(1, 43.5)
+    self.set_row(2, 43.5)
+    self.set_row(3, 43.5)
+    for s_row in range(4, 50):
+        self.set_row(s_row, 41)
 
 
 def draw_report_title(book, sheet, data, row=0, col=0):
@@ -84,57 +63,57 @@ def draw_report_title(book, sheet, data, row=0, col=0):
     return row
 
 
-"""Здесь был расчет сумм"""
-# sum_1_classes = calc_sums(data_1_classes, all_1_classes)
-# print(sum_1_classes)
-# sum_2_classes = calc_sums(data_2_classes, all_2_classes)
-# print(sum_2_classes)
-# sum_3_classes = calc_sums(data_3_classes, all_3_classes)
-# print(sum_3_classes)
-# sum_4_classes = calc_sums(data_4_classes, all_4_classes)
-# print(sum_4_classes)
-#
-# all_sums = copy.copy(sum_1_classes)
-# all_sums[0] = result_name
-#
-# for i in range(1, 5):
-#     all_sums[i] = all_sums[i] + sum_2_classes[i] + sum_3_classes[i] + sum_4_classes[i]
-#
-# print(all_sums)
+def calc_report_table_forms_sums(data):
+    """Calculate sums for all same years classes"""
+    # write data for all 1 classes
+    forms = {FORMS_TITLE[0]: [0, 0, 0, 0, ' '],
+             FORMS_TITLE[1]: [0, 0, 0, 0, ' '],
+             FORMS_TITLE[2]: [0, 0, 0, 0, ' '],
+             FORMS_TITLE[3]: [0, 0, 0, 0, ' ']
+             }
 
-# # write data for all 1 classes
-#   write_classes_sums(data_1_classes, row, col, worksheet, workbook)
-#   row += len(data_1_classes)
-#   # write sums for 1 classes
-#   write_all_sums(sum_1_classes, row, col, worksheet, workbook)
-#   row += 1
-#
-#   # write data for all 2 classes
-#   write_classes_sums(data_2_classes, row, col, worksheet, workbook)
-#   row += len(data_2_classes)
-#   # write sums for 2 classes
-#   write_all_sums(sum_2_classes, row, col, worksheet, workbook)
-#   row += 1
-#
-#   # write data for all 3 classes
-#   write_classes_sums(data_3_classes, row, col, worksheet, workbook)
-#   row += len(data_3_classes)
-#   # write sums for 3 classes
-#   write_all_sums(sum_3_classes, row, col, worksheet, workbook)
-#   row += 1
-#
-#   # write data for all 4 classes
-#   write_classes_sums(data_4_classes, row, col, worksheet, workbook)
-#   row += len(data_4_classes)
-#   # write sums for 4 classes
-#   write_all_sums(sum_4_classes, row, col, worksheet, workbook)
-#
-#   for i in range(6):
-#       sheet.write(row, col+i, ' ', text_box_center_wrap_format(book))
-#
-#   # write resulting sums
-#   row += 1
-#   write_all_sums(all_sums, row, col)
+    for form in data:
+        if '1' in form:
+            for i in range(0, 4):
+                forms[FORMS_TITLE[0]][i] += data[form][i]
+        elif '2' in form:
+            for i in range(0, 4):
+                forms[FORMS_TITLE[1]][i] += data[form][i]
+        elif '3' in form:
+            for i in range(0, 4):
+                forms[FORMS_TITLE[2]][i] += data[form][i]
+        elif '4' in form:
+            for i in range(0, 4):
+                forms[FORMS_TITLE[3]][i] += data[form][i]
+    return forms
+
+
+def draw_report_table_forms(book, sheet, data, form, row, col=0):
+    """Fill cells for each class with data"""
+    sheet.write(row, col, form, text_box_center_wrap_format(book))
+    sheet.write(row, col + 1, data[0], text_box_center_blue_format(book))
+    sheet.write(row, col + 2, data[1], text_box_center_blue_format(book))
+    sheet.write(row, col + 3, data[2], text_box_center_wrap_num_format(book))
+    sheet.write(row, col + 4, data[3], text_box_center_wrap_num_format(book))
+    sheet.write(row, col + 5, data[4], text_box_center_wrap_format(book))
+    row += 1
+    return row
+
+
+def draw_report_table_sums(book, sheet, data, form, row, col=0):
+    """Fill cells for each same year classes with sum data"""
+    n = 0
+    sheet.write(row, col, form, text_box_center_bold_format(book))
+    col += 1
+    for numbers in data[form]:
+        if n == 4:
+            sheet.write(row, col, numbers, text_box_center_bold_num_format(book))
+        else:
+            sheet.write(row, col, numbers, text_box_center_bold_format(book))
+        n += 1
+        col += 1
+    row += 1
+    return row
 
 
 def draw_report_signs(book, sheet, row, col=0):
@@ -144,4 +123,4 @@ def draw_report_signs(book, sheet, row, col=0):
     for k, v in REPORT1_SIGNS_DICT.items():
         row += 1
         sheet.merge_range(row, col+1, row, col+2, k, default_format(book))
-        sheet.write(row, col+5, v, default_format(book))
+        sheet.write(row, col+4, v, default_format(book))

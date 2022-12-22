@@ -1,5 +1,90 @@
-from report_data import CLASS_NAME_TABLE_COL, CLASS_REPORT_SIGNS_DICT, CLASS_TEACHER
+from report_data import CLASS_NAME_TABLE_COL, CLASS_REPORT_SIGNS_DICT, CLASS_TEACHER, CLASS_WAS_NOT
 from cell_formats import *
+
+
+def set_worksheet_classes(self, pupil, days):
+    """Settings for class report"""
+    # fit to printed area
+    self.fit_to_pages(1, 1)
+    # paper type A4
+    self.set_paper(9)
+    # center the printed page horizontally
+    self.center_horizontally()
+    # margins    set_margins([left=0.7,] right=0.7,] top=0.75,] bottom=0.75]]])
+    self.set_margins(0.7, 0.7, 0.73, 0.92)
+    # width of cells
+    self.set_column_pixels("A:A", 28)
+    self.set_column_pixels("B:B", 160)
+    # width for working days
+    if len(days) <= (ord("Z") - ord("C")):
+        end_letter = chr(ord("C") + len(days) - 1)
+        address = "C:" + end_letter
+    else:
+        shift = len(days) - (ord("Z") - ord("C"))
+        end_letter = chr(ord("A") + shift - 1)
+        address = "C:" + "A" + end_letter
+    self.set_column_pixels(address, 34)
+    # width last cells after working days
+    for set_width in range(3):
+        if address[0] == "Z" or len(address) == 4:
+            address = "AA:AA"
+        elif len(address) == 5:
+            end_letter = chr(ord(address[4]) + 1)
+            address = "A" + end_letter + ":A" + end_letter
+        else:
+            end_letter = chr(ord(end_letter) + 1)
+            address = end_letter + ":" + end_letter
+        self.set_column_pixels(address, 87)
+        set_width += 1
+
+    # height of cells
+
+    self.set_row_pixels(0, 40)
+    self.set_row_pixels(1, 40)
+    self.set_row_pixels(2, 20)
+    self.set_row_pixels(3, 30)
+    self.set_row_pixels(4, 30)
+    # Set row height depending on number of pupils
+    set_row = 5
+    for set_pupil in range(set_row, pupil+set_row+1):
+        self.set_row_pixels(set_pupil, 36)
+    set_row += pupil
+    self.set_row_pixels(set_row, 40)
+    self.set_row_pixels(set_row+1, 54)
+    self.set_row_pixels(set_row+2, 20)
+    self.set_row_pixels(set_row+3, 40)
+    self.set_row_pixels(set_row+4, 40)
+    self.set_row_pixels(set_row+5, 40)
+    self.set_row_pixels(set_row+6, 40)
+    return set_row
+
+
+"""Розрахувати кількість дітей, які харчуються"""
+
+
+def cell_value_check(value: str, values: tuple, cost: float) -> any:
+    """Check the value in the cell"""
+    if value == values[0]:
+        value = cost
+    elif value == values[2]:
+        value = CLASS_WAS_NOT
+    return value
+
+
+def pupil_missed_days(value: str, values: tuple) -> int:
+    """if pupil missed day, then add 1"""
+    res = 0
+    if value != values[0]:
+        res = 1
+    return res
+
+
+def pupil_child_days(value: str, values: tuple) -> int:
+    """if pupil was this day, then add 1"""
+    res = 0
+    if value == values[0]:
+        res = 1
+    return res
 
 
 def draw_class_report_title(book, sheet, data, days, row=0, col=0):
@@ -67,16 +152,3 @@ def draw_class_report_signs(book, sheet, data, row, col=2):
     # make sign of class teacher
     sheet.merge_range(row, col, row, col + 7, CLASS_TEACHER, classes_signs_format(book))
     sheet.write(row, col + 12, data, classes_signs_format(book))
-
-
-    # # write 1 row "Звіт"
-    # sheet.merge_range(row, col, row, col+4+len(days), data[0], title_format2(book))
-    # row += 1
-    #
-    # # write 2 row
-    # sheet.merge_range(row, col, row, col+4+len(days), data[1], title_format2(book))
-    # row += 2
-    #
-    # # make table
-    # sheet.merge_range(row, col, row+1, col, CLASS_NAME_TABLE_COL[0], text_box_center_wrap_format2(book))
-    # sheet.merge_range(row, col+1, row+1, col+1, CLASS_NAME_TABLE_COL[1], text_box_center_wrap_format2(book))
