@@ -33,6 +33,7 @@ if __name__ == "__main__":
     # Receive variants what cell contains
     service = xls.parse(sheet_xls_name, header=None)
     cells_const_values = tuple(service.values[1:, 0])
+    ind_study = cells_const_values[4]
     print('cells_const_values:', cells_const_values)
 
     # Receive data from "Загальні налаштування" sheet in xlsx
@@ -168,6 +169,15 @@ if __name__ == "__main__":
             missed_days_form += sum_missed
             child_days_form += sum_child
 
+        # Define pupil, who doesn't eat
+        ind_pupil = 0
+        for r in db_all_classes[form].index:
+            ind_study_list = []
+            for q in range(3, len(class_columns)):
+                ind_study_list.append(db_all_classes[form].iloc[r, q])
+            if ([ind_study_list[0]] * len(ind_study_list)) == ind_study_list:
+                ind_pupil += 1
+
         # Write to class report missed and child days for each pupil, and money + draw free cells
         worksheet2.write(5 + pupil_quantity, len(class_columns) - 1, missed_days_form,
                          cell_formats.pupils_number_format(workbook))
@@ -189,9 +199,16 @@ if __name__ == "__main__":
 
         """Розрахувати кількість дітей, які харчуються"""
         """Підготувати примітки про індивідуальне навчання, вибування, прибування"""
-        note = ''
+
+
         # Prepare data for report table
-        pupil_eat = pupil_quantity
+        pupil_eat = pupil_quantity - ind_pupil
+
+        if ind_pupil != 0:
+            note = f"{ind_pupil} - індивідуальне навчання"
+        else:
+            note = ''
+
         report_data = [pupil_quantity, pupil_eat, child_days_form, child_days_form * price, note]
         form_report_data.setdefault(form, report_data)
 

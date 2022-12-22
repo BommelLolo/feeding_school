@@ -93,9 +93,9 @@ def draw_report_table_forms(book, sheet, data, form, row, col=0):
     sheet.write(row, col, form, text_box_center_wrap_format(book))
     sheet.write(row, col + 1, data[0], text_box_center_blue_format(book))
     sheet.write(row, col + 2, data[1], text_box_center_blue_format(book))
-    sheet.write(row, col + 3, data[2], text_box_center_wrap_num_format(book))
+    sheet.write(row, col + 3, data[2], text_box_center_wrap_format(book))
     sheet.write(row, col + 4, data[3], text_box_center_wrap_num_format(book))
-    sheet.write(row, col + 5, data[4], text_box_center_wrap_format(book))
+    sheet.write(row, col + 5, data[4], text_box_left_wrap_format(book))
     row += 1
     return row
 

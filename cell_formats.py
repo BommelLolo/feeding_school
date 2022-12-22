@@ -64,6 +64,18 @@ def text_box_center_wrap_format(self):
     return text_box_center_wrap
 
 
+def text_box_left_wrap_format(self):
+    text_box_left_wrap = self.add_format({
+        'font_name': REGULAR_FONT,
+        'font_size': REGULAR_SIZE,
+        'align': 'left',
+        'valign': 'vcenter',
+        'border': True,
+        'text_wrap': True
+    })
+    return text_box_left_wrap
+
+
 def text_box_center_wrap_num_format(self):
     text_box_center_wrap = self.add_format({
         'font_name': REGULAR_FONT,
